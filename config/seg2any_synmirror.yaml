@@ -1,0 +1,94 @@
+project:
+  tracker_project_name: "seg2any_synmirror"
+  output_dir: "./ckpt/synmirror"
+  logging_dir: "logs"
+  gen_image_dir: "gen_imgs"
+  report_to: "tensorboard" 
+
+resolution: &resolution 512
+cond_scale_factor: &cond_scale_factor 1 
+
+data:
+  train:
+    target: dataset.synmirror_dataset.SynMirrorDataset
+    params:
+      image_root: ./data/SynMirror
+      is_group_bucket: False # Disabled for now as per implementation
+      resolution: *resolution
+      cond_scale_factor: *cond_scale_factor
+  val:
+    target: dataset.synmirror_dataset.SynMirrorDataset
+    params:
+      image_root: ./data/SynMirror # Using same root for now, ideally should be split
+      resolution: *resolution
+      cond_scale_factor: *cond_scale_factor
+
+model:
+  pretrained_model_name_or_path: black-forest-labs/FLUX.1-dev
+
+  attention_mask_method: "base" 
+  hard_attn_block_range: [19,37] 
+  is_use_cond_token: True 
+  is_filter_cond_token: True 
+
+  rank: 64 
+  default_lora_layers: "all-linear-in-dit-blocks" 
+  cond_lora_layers: "regular_expression:(.*x_embedder|.*(?<!single_)transformer_blocks\\.[0-9]+\\.norm1\\.linear|.*(?<!single_)transformer_blocks\\.[0-9]+\\.attn\\.to_k|.*(?<!single_)transformer_blocks\\.[0-9]+\\.attn\\.to_q|.*(?<!single_)transformer_blocks\\.[0-9]+\\.attn\\.to_v|.*(?<!single_)transformer_blocks\\.[0-9]+\\.attn\\.to_out\\.0|.*(?<!single_)transformer_blocks\\.[0-9]+\\.ff\\.net\\.2|.*(?<!single_)transformer_blocks\\.[0-9]+\\.ff\\.net\\.0\\.proj|.*single_transformer_blocks\\.[0-9]+\\.norm\\.linear|.*single_transformer_blocks\\.[0-9]+\\.proj_mlp|.*single_transformer_blocks\\.[0-9]+\\.proj_out|.*single_transformer_blocks\\.[0-9]+\\.attn.to_k|.*single_transformer_blocks\\.[0-9]+\\.attn.to_q|.*single_transformer_blocks\\.[0-9]+\\.attn.to_v|.*single_transformer_blocks\\.[0-9]+\\.attn.to_out)"
+  
+  use_lora_bias: False
+  gaussian_init_lora: False
+
+  num_inference_steps: 32
+
+  max_sequence_length: 512 
+  regional_max_sequence_length: 10
+
+  weighting_scheme: "none" 
+  logit_mean: 0 
+  logit_std: 1 
+  mode_scale: 1.29 
+
+optimizer:
+  adam_beta1: 0.9
+  adam_beta2: 0.999
+  adam_weight_decay: 1e-2
+  adam_epsilon: 1e-08
+  max_grad_norm: 1
+
+scheduler: 
+  lr_scheduler: "constant" 
+  lr_warmup_steps: 0
+  lr_num_cycles: 1 
+  lr_power: 1 
+
+trainer:
+  guidance_scale: 1
+  train_batch_size: 4 
+  
+  learning_rate: 1e-4
+
+  scale_lr: False 
+
+  gradient_accumulation_steps: 1
+  gradient_checkpointing: True
+  offload: False
+
+  num_train_epochs: 10 # Increased epochs since dataset might be small (500 objects * 3 images = 1500 images)
+  max_train_steps: 20000 
+  num_validation_images: 4
+
+  validation_steps: 500 # More frequent validation
+
+  checkpointing_steps: 1000
+  checkpoints_total_limit: 5 
+
+  allow_tf32: False
+
+eval:
+  num_images_per_prompt: 4
+  guidance_scale: 3.5
+
+dataloader_num_workers: 4
+seed: 42
+mixed_precision: "bf16" 
+resume_from_checkpoint: null 
