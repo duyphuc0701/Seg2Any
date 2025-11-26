@@ -39,6 +39,7 @@ def main():
     path_to_caption = dict(zip(df['path'], df['caption']))
 
     print(len(path_to_caption))
+    print(path_to_caption["abo_v3/1/B075X3S2Z1/0.hdf5"])
     
     # Initialize LangSAM
     print("Initializing LangSAM model...")
