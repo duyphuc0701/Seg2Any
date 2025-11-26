@@ -37,6 +37,8 @@ def main():
     # The 'path' in CSV seems to be like 'abo_v3/B/B07JY4H14B/0'
     # We will normalize it to match our file traversal if needed.
     path_to_caption = dict(zip(df['path'], df['caption']))
+
+    print(len(path_to_caption))
     
     # Initialize LangSAM
     print("Initializing LangSAM model...")
