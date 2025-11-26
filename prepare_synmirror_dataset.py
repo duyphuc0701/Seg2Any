@@ -55,8 +55,8 @@ def main():
         # hdf5_path relative to data_root would be abo_v3/X/ID/0.hdf5
         
         rel_path = hdf5_path.relative_to(data_root)
-        # Remove .hdf5 extension to match CSV path format
-        csv_key = str(rel_path.with_suffix('')).replace('\\', '/')
+
+        csv_key = rel_path
         
         # Create output directory
         # The user wants a subfolder with the same name as .hdf5 file in the same location
