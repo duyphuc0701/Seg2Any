@@ -59,7 +59,7 @@ def main():
         
         rel_path = hdf5_path.relative_to(data_root)
 
-        csv_key = rel_path
+        csv_key = str(rel_path)
         
         # Create output directory
         # The user wants a subfolder with the same name as .hdf5 file in the same location
